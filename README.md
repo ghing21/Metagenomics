@@ -1,8 +1,113 @@
-# Metagenomics project
+# 23260 Metagenomics Project
 
-This repository is for 23260_metagenomics project.
+This repository contains the code, workflows and notes for the **23260 Metagenomics** course project at DTU.
 
-Porject consists of following:
+The project takes raw shotgun metagenomic sequencing reads through a full analysis pipeline, from read quality control to genome-resolved metagenomics.
 
-Week 2,3: Trimming of fastq files: fastq_> bbduk
-_> fastq _> fastqc
+---
+
+## Project overview
+
+| Week | Step | Tools | Status |
+|------|------|-------|--------|
+| 2–3 | Read trimming & quality control | BBDuk, FastQC | ✅ |
+| … | *Next steps go here* | | ⏳ |
+
+---
+
+## Week 2–3: Trimming and quality control
+
+### Workflow
+
+```
+raw FASTQ  ──►  BBDuk  ──►  trimmed FASTQ  ──►  FastQC
+```
+
+1. **Raw reads**: paired-end FASTQ files (`*_R1.fastq.gz`, `*_R2.fastq.gz`).
+2. **BBDuk**: removes sequencing adapters and trims low-quality bases and short reads.
+3. **Trimmed reads**: cleaned FASTQ files used for all downstream analysis.
+4. **FastQC**: checks read quality after trimming (per-base quality, adapter content, GC content, length distribution).
+
+### Example commands
+
+**BBDuk (adapter + quality trimming)**
+
+```bash
+bbduk.sh \
+    in1=raw_reads/SAMPLE_R1.fastq.gz \
+    in2=raw_reads/SAMPLE_R2.fastq.gz \
+    out1=results/trimmed/SAMPLE_R1.trim.fastq.gz \
+    out2=results/trimmed/SAMPLE_R2.trim.fastq.gz \
+    ref=adaptors/adapters.fa \
+    ktrim=r k=23 mink=11 hdist=1 tpe tbo \
+    qtrim=rl trimq=20 minlen=50
+```
+
+| Parameter | Meaning |
+|-----------|---------|
+| `ref` | Adapter sequences to remove |
+| `ktrim=r` | Trim adapters from the right (3′) end |
+| `k`, `mink`, `hdist` | k-mer size, minimum k-mer at read ends, allowed mismatches |
+| `tpe`, `tbo` | Trim both reads equally; trim adapters by pair overlap |
+| `qtrim=rl trimq=20` | Quality-trim both ends to Q20 |
+| `minlen=50` | Discard reads shorter than 50 bp after trimming |
+
+**FastQC (quality report)**
+
+```bash
+fastqc results/trimmed/*.fastq.gz -o results/fastqc/ -t 8
+```
+
+To compare samples, the individual FastQC reports can optionally be combined with MultiQC:
+
+```bash
+multiqc results/fastqc/ -o results/multiqc/
+```
+
+### Running with Snakemake
+
+The steps are wrapped in a Snakemake workflow (`Snakefile`). Check the workflow first with a dry run:
+
+```bash
+snakemake -s Snakefile --dryrun -p
+```
+
+Then run it:
+
+```bash
+snakemake -s Snakefile --cores 8
+```
+
+> On the HPC, load Snakemake first (e.g. `module load snakemake/<version>`), or follow the course's `config.sh`.
+
+---
+
+## Repository structure
+
+```
+.
+├── Snakefile          # Snakemake workflow
+├── config.sh          # Paths / environment setup
+├── scripts/           # Helper scripts
+├── raw_reads/         # Input FASTQ files (not tracked in git)
+├── results/
+│   ├── trimmed/       # BBDuk output
+│   └── fastqc/        # FastQC reports
+└── README.md
+```
+
+---
+
+## Requirements
+
+- [BBTools](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/) (BBDuk)
+- [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
+- [MultiQC](https://multiqc.info/) (optional)
+- [Snakemake](https://snakemake.readthedocs.io/)
+
+---
+
+## Author
+
+**Bhavya Gudhka**, MSc Bioinformatics, DTU
+Course: 23260 Metagenomics
