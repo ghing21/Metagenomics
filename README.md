@@ -28,29 +28,6 @@ raw FASTQ  ──►  BBDuk  ──►  trimmed FASTQ  ──►  FastQC
 3. **Trimmed reads**: cleaned FASTQ files used for all downstream analysis.
 4. **FastQC**: checks read quality after trimming (per-base quality, adapter content, GC content, length distribution).
 
-### Example commands
-
-**BBDuk (adapter + quality trimming)**
-
-```bash
-bbduk.sh \
-    in1=raw_reads/SAMPLE_R1.fastq.gz \
-    in2=raw_reads/SAMPLE_R2.fastq.gz \
-    out1=results/trimmed/SAMPLE_R1.trim.fastq.gz \
-    out2=results/trimmed/SAMPLE_R2.trim.fastq.gz \
-    ref=adaptors/adapters.fa \
-    ktrim=r k=23 mink=11 hdist=1 tpe tbo \
-    qtrim=rl trimq=20 minlen=50
-```
-
-| Parameter | Meaning |
-|-----------|---------|
-| `ref` | Adapter sequences to remove |
-| `ktrim=r` | Trim adapters from the right (3′) end |
-| `k`, `mink`, `hdist` | k-mer size, minimum k-mer at read ends, allowed mismatches |
-| `tpe`, `tbo` | Trim both reads equally; trim adapters by pair overlap |
-| `qtrim=rl trimq=20` | Quality-trim both ends to Q20 |
-| `minlen=50` | Discard reads shorter than 50 bp after trimming |
 
 **FastQC (quality report)**
 
